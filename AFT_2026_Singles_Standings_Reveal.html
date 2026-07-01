@@ -6,10 +6,11 @@
 <title>2026 AFT Singles — Championship Standings</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
-  html,body{height:100%;background:#540000;}
-  #frame{min-height:100%;display:flex;align-items:center;justify-content:center;
-    padding:0;overflow:hidden;}
-  .stage{position:relative;width:100%;max-width:1080px;margin:auto;line-height:0;}
+  html,body{min-height:100%;background:#540000;}
+  #frame{min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:0;overflow:auto;}
+  /* 4:5 graphic (1080x1350) -> 1100px height cap = 880px width cap; scales down responsively */
+  .stage{position:relative;width:min(100%,880px);margin:auto;line-height:0;}
   .plate{display:block;width:100%;height:auto;}
   .row{position:absolute;left:0;width:100%;height:auto;
     opacity:0;transform:translateX(-6%) scale(.995);
@@ -18,22 +19,6 @@
   .row.show{opacity:1;transform:none;animation:flash .55s ease-out;}
   @keyframes flash{0%{filter:brightness(1.75)}55%{filter:brightness(1.12)}100%{filter:brightness(1)}}
 
-  .controls{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);
-    display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;
-    max-width:94vw;z-index:30;background:rgba(8,11,18,.74);backdrop-filter:blur(6px);
-    border:1px solid rgba(255,255,255,.12);padding:7px 10px;border-radius:12px;
-    font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;transition:opacity .3s;}
-  .controls.hidden{opacity:0;pointer-events:none;}
-  .controls button,.controls .seg{color:#e8eef6;background:rgba(255,255,255,.08);
-    border:1px solid rgba(255,255,255,.15);border-radius:8px;font-size:14px;font-weight:600;
-    padding:8px 13px;cursor:pointer;}
-  .controls button:hover{background:rgba(255,255,255,.18);}
-  .controls .seg{display:flex;padding:0;overflow:hidden;}
-  .controls .seg button{border:0;border-radius:0;border-left:1px solid rgba(255,255,255,.14);}
-  .controls .seg button:first-child{border-left:0;}
-  .controls .seg button.active{background:#c8102e;color:#fff;}
-  .controls .hint{color:#9aa6b4;font-size:11px;width:100%;text-align:center;}
-  @media (max-width:520px){ .controls .hint{display:none;} }
   @media (prefers-reduced-motion: reduce){
     .row{transition:opacity .2s ease;transform:none;}
     .row.show{animation:none;}
@@ -57,22 +42,12 @@
     </div>
   </div>
 
-  <div class="controls" id="controls">
-    <button id="replay">&#9654;&nbsp;Replay</button>
-    <div class="seg" id="speed">
-      <button data-mult="1.7">Slow</button>
-      <button data-mult="1" class="active">Normal</button>
-      <button data-mult="0.55">Fast</button>
-    </div>
-    <span class="hint">Space = replay &nbsp;·&nbsp; H = hide bar</span>
-  </div>
-
 <script>
   const rows=[...document.querySelectorAll('.row')];   // DOM order = rank 1..10 (top..bottom)
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   const BASE=850;            // pause between rider reveals (ms)
-  let mult=1, runId=0;
+  let runId=0;
 
   function reset(){ rows.forEach(r=>r.classList.remove('show')); }
 
@@ -81,20 +56,13 @@
     for(let i=rows.length-1;i>=0;i--){          // bottom (10th) up to top (1st)
       if(my!==runId) return;
       rows[i].classList.add('show');
-      await sleep(BASE*mult);
+      await sleep(BASE);
     }
   }
 
-  document.getElementById('replay').addEventListener('click',play);
-  document.querySelectorAll('#speed button').forEach(b=>b.addEventListener('click',()=>{
-    document.querySelectorAll('#speed button').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active'); mult=parseFloat(b.dataset.mult);
-  }));
-  const controls=document.getElementById('controls');
-  addEventListener('keydown',e=>{
-    if(e.code==='Space'){e.preventDefault();play();}
-    if(e.key==='h'||e.key==='H') controls.classList.toggle('hidden');
-  });
+  // No on-screen controls. Click the graphic or press Space to replay.
+  document.getElementById('stage').addEventListener('click',play);
+  addEventListener('keydown',e=>{ if(e.code==='Space'){e.preventDefault();play();} });
   addEventListener('load',()=>setTimeout(play,450));
 </script>
 </body>
